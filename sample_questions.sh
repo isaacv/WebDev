@@ -40,5 +40,48 @@ function columnSplit(){
 
 # 1.d) Find only the lines that have a date of the format "YYYY-MM-DD" followed by a tab or space, and the line ends in '!'
 function filterLines(){
-	sed -n '/[0-9][0-9][0-9][0-9]\-[0-1][0-9]\-[0-3][0-9] /p' Documents/testLog.csv | sed -n '/!$/p'
+	touch "/tmp/filteredFile.csv"
+	sed -n '/[0-9][0-9][0-9][0-9]\-[0-1][0-9]\-[0-3][0-9] /p' Documents/testLog.csv | sed -n '/!$/p' > "/tmp/filteredFile.csv" 
+
+	echo "Doing the stuff..."
 }
+
+# 1.e) How will that change if the file is gzipped?
+# A: If the file is gzipped I will need to use zgrep to grep the compressed file and then pipe it to the filterLines() function
+
+# 1.f) Sort the data based on the 2nd column (which is numberic) and remove duplicates based on the 'sum' column you created previously.
+function sortClear(){
+	# PARAMS:
+	# -n: numeric sort
+	# -u: unique. Remove dupes
+	# -k: Column to sort
+	sort -n -u -k2 "/tmp/filteredFile.csv" > "/tmp/sortedFile.csv"
+}
+
+# 2. Make that script run on midnight every Sunday.
+
+# Cronjob cheatsheet
+# 1. Entry: Minute when the process will be started [0-60]
+# 2. Entry: Hour when the process will be started [0-23]
+# 3. Entry: Day of the month when the process will be started [1-28/29/30/31]
+# 4. Entry: Month of the year when the process will be started [1-12]
+# 5. Entry: Weekday when the process will be started [0-6] [0 is Sunday]
+#
+# all x min = */x
+
+## Run the script every Sunday at midnight
+# crontab -e 
+# 0 0 * * 0 ./path/to/script.sh
+
+# 3. Find all the files in a folder which changed in the past 24 hours and are named *.log
+#    a. Rename them to *.new.log
+
+## Finding all log files modified in the past 24h
+# find . -name \*.log -mtime 0 | ls -l
+
+## a. Rename them to *.new.log
+# find . -name \*.log -mtime 0 | xargs rename s/.log/.new.log/
+
+# 4. Create a file with the machine's IP data named IP.txt, Copy this file 10 times with the prefix 01 - 10
+# ifconfig | awk '{match($0,/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/); ip = substr($0,RSTART,RLENGTH); print ip}' > "/tmp/IP.txt"
+# for i in {1..10}; do cp "/tmp/IP.txt" "/tmp/$i-IP.txt"; done
